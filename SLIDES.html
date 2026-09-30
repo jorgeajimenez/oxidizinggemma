@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oxidizing Gemma — Rust, Candle, and Native Inference</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Official Google Brand Palette */
+      --g-blue: #4285F4;
+      --g-red: #EA4335;
+      --g-yellow: #FBBC05;
+      --g-green: #34A853;
+      --g-blue-dark: #1a73e8;
+      
+      --bg-dark: #202124;
+      --bg-card: #303134;
+      --bg-code: #1f2023;
+      --border-color: #3C4043;
+      --text-main: #E8EAED;
+      --text-dim: #9AA0A6;
+      --text-bright: #FFFFFF;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Top Google 4-Color Accent Line */
+    .top-color-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      display: flex;
+      z-index: 100;
+    }
+    .top-color-bar div { flex: 1; height: 100%; }
+    .top-color-bar .blue { background: var(--g-blue); }
+    .top-color-bar .red { background: var(--g-red); }
+    .top-color-bar .yellow { background: var(--g-yellow); }
+    .top-color-bar .green { background: var(--g-green); }
+
+    /* Presentation Container */
+    #deck {
+      position: relative;
+      width: 90vw;
+      max-width: 1200px;
+      height: 82vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .slide {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 48px 56px;
+      display: none;
+      flex-direction: column;
+      justify-content: flex-start;
+      opacity: 0;
+      transform: scale(0.98);
+      transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto;
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .slide.active {
+      display: flex;
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* Typography */
+    h1 {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      color: var(--text-bright);
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+
+    h2 {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 2.0rem;
+      font-weight: 700;
+      color: var(--g-blue);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    h3 {
+      font-size: 1.3rem;
+      font-weight: 500;
+      color: var(--text-bright);
+      margin: 16px 0 8px 0;
+    }
+
+    p, li {
+      font-size: 1.15rem;
+      line-height: 1.6;
+      color: var(--text-main);
+    }
+
+    ul {
+      margin-left: 28px;
+      margin-bottom: 16px;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    /* Color Badges & Accents */
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-right: 8px;
+    }
+    .badge-blue { background: rgba(66, 133, 244, 0.15); color: var(--g-blue); border: 1px solid var(--g-blue); }
+    .badge-green { background: rgba(52, 168, 83, 0.15); color: var(--g-green); border: 1px solid var(--g-green); }
+    .badge-yellow { background: rgba(251, 188, 5, 0.15); color: var(--g-yellow); border: 1px solid var(--g-yellow); }
+    .badge-red { background: rgba(234, 67, 53, 0.15); color: var(--g-red); border: 1px solid var(--g-red); }
+
+    /* Code Blocks */
+    pre, code {
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    code {
+      background: var(--bg-code);
+      color: var(--g-yellow);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.95em;
+    }
+
+    pre {
+      background: var(--bg-code);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 18px 22px;
+      overflow-x: auto;
+      margin: 14px 0;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: #8ab4f8;
+    }
+
+    .keyword { color: var(--g-red); font-weight: 600; }
+    .type { color: var(--g-yellow); }
+    .string { color: var(--g-green); }
+    .fn { color: var(--g-blue); font-weight: 500; }
+    .comment { color: #80868B; font-style: italic; }
+
+    /* Split Columns */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 12px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 20px;
+    }
+
+    /* Benchmark Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 1.05rem;
+    }
+
+    th, td {
+      padding: 14px 18px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--g-blue);
+      font-weight: 600;
+    }
+
+    .highlight-green {
+      color: var(--g-green);
+      font-weight: 700;
+    }
+
+    /* Controls Bar */
+    #controls {
+      position: fixed;
+      bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 8px 20px;
+      border-radius: 30px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+      z-index: 100;
+    }
+
+    button {
+      background: none;
+      border: none;
+      color: var(--text-main);
+      font-family: 'Google Sans', sans-serif;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    button:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--g-blue);
+    }
+
+    #slide-indicator {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text-dim);
+      min-width: 70px;
+      text-align: center;
+    }
+
+    /* Progress bar */
+    #progress-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: rgba(255,255,255,0.05);
+    }
+
+    #progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--g-blue), var(--g-red), var(--g-yellow), var(--g-green));
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .quote-box {
+      border-left: 4px solid var(--g-blue);
+      background: rgba(66, 133, 244, 0.08);
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 16px 0;
+      font-style: italic;
+      color: #E8EAED;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-color-bar">
+    <div class="blue"></div>
+    <div class="red"></div>
+    <div class="yellow"></div>
+    <div class="green"></div>
+  </div>
+
+  <div id="deck">
+
+    <!-- Slide 1: Title -->
+    <div class="slide active" style="justify-content: center; align-items: center; text-align: center;">
+      <div style="margin-bottom: 24px;">
+        <span class="badge badge-blue">Rust</span>
+        <span class="badge badge-red">Candle</span>
+        <span class="badge badge-yellow">Gemma 4</span>
+        <span class="badge badge-green">Zero-Python</span>
+      </div>
+      <h1 style="font-size: 3.4rem;">Oxidizing Gemma</h1>
+      <h3 style="color: var(--text-dim); font-weight: 400; font-size: 1.5rem; max-width: 800px; margin-top: 8px;">
+        Rust, Candle, and Native Foundation Model Inference
+      </h3>
+      <div style="margin-top: 40px; color: var(--text-dim); font-size: 1.05rem;">
+        <strong>Speaker:</strong> Jorge Jimenez &bull; <span style="color: var(--g-blue);">Systems Engineering & Native AI</span>
+      </div>
+    </div>
+
+    <!-- Slide 2: Why Learn a Language in 2026? -->
+    <div class="slide">
+      <h2>Why Learn a Programming Language in 2026?</h2>
+      <div class="quote-box">
+        "When an AI agent can synthesize boilerplates, functions, and regex in milliseconds, why invest hundreds of hours mastering borrow checkers, memory layouts, cache lines, and concurrency primitives in 2026?"
+      </div>
+      <div class="grid-2" style="margin-top: 14px;">
+        <div class="card" style="border-left: 4px solid var(--g-yellow);">
+          <strong style="color: var(--g-yellow);">1. Syntax is Commoditized</strong>
+          <p style="font-size: 0.95rem; margin-top: 8px; color: var(--text-dim);">
+            Generating code text has reached near-zero marginal cost. Typing is no longer the bottleneck of engineering.
+          </p>
+        </div>
+        <div class="card" style="border-left: 4px solid var(--g-blue);">
+          <strong style="color: var(--g-blue);">2. Constraints are Inviolable</strong>
+          <p style="font-size: 0.95rem; margin-top: 8px; color: var(--text-dim);">
+            Hardware limits, memory bandwidth, cache lines, and race conditions do not yield to conversational English.
+          </p>
+        </div>
+      </div>
+      <div class="card" style="margin-top: 16px; border-left: 4px solid var(--g-green);">
+        <strong style="color: var(--g-green);">The New Reality:</strong>
+        <p style="font-size: 1.05rem; margin-top: 6px;">
+          You do not learn a programming language to type characters. You learn it so you have the <strong>conceptual vocabulary</strong> to evaluate, constrain, and verify what the machine builds.
+        </p>
+      </div>
+    </div>
+
+    <!-- Slide 3: What Does It Mean to LEARN a Language Nowadays? -->
+    <div class="slide">
+      <h2>What Does It Mean to LEARN a Language Nowadays?</h2>
+      <div class="grid-2" style="margin-top: 14px;">
+        <div class="card" style="border-left: 4px solid var(--g-red);">
+          <h3 style="color: var(--g-red); margin-top: 0;">The Obsolete Paradigm</h3>
+          <ul>
+            <li>Memorizing API signatures and syntax quirks.</li>
+            <li>Writing repetitive CRUD boilerplate by hand.</li>
+            <li>Treating the language as a mechanical transcription tool.</li>
+          </ul>
+        </div>
+        <div class="card" style="border-left: 4px solid var(--g-green);">
+          <h3 style="color: var(--g-green); margin-top: 0;">The Modern Paradigm</h3>
+          <ul>
+            <li><strong>Internalizing Worldviews:</strong> Rust teaches affine ownership and memory layout; Go teaches CSP concurrency.</li>
+            <li><strong>Language as Thought Scaffold:</strong> You can only prompt for architectures you have mental models for.</li>
+            <li><strong>Deterministic Verification:</strong> The compiler is your mathematical theorem prover.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="quote-box" style="margin-top: 20px;">
+        "The limits of my language mean the limits of my world." — Ludwig Wittgenstein
+      </div>
+    </div>
+
+    <!-- Slide 4: The Prompting Paradox -->
+    <div class="slide">
+      <h2>The Prompting Paradox: Domain Math vs. Natural Language</h2>
+      <div class="quote-box">
+        "At what point does describing a domain process in English become <strong>100x more verbose, clumsy, and exhausting</strong> than writing the mathematical notation?"
+      </div>
+      <div class="grid-2" style="margin-top: 14px;">
+        <div class="card" style="border-left: 4px solid var(--g-red);">
+          <strong style="color: var(--g-red);">Verbose English Prompt (110+ words)</strong>
+          <p style="font-size: 0.9rem; margin-top: 8px; color: var(--text-dim); line-height: 1.5;">
+            "Take the query vectors, scale them by the inverse square root of head dimension, compute pairwise dot-products against all key vectors across the sequence length, apply numerical stabilization by subtracting row maximums, compute softmax across the attention window, and multiply by the value representations..."
+          </p>
+        </div>
+        <div class="card" style="border-left: 4px solid var(--g-blue);">
+          <strong style="color: var(--g-blue);">Baked-In Domain Knowledge &amp; Code</strong>
+          <div style="background: rgba(66, 133, 244, 0.1); padding: 8px 12px; border-radius: 6px; margin: 8px 0; font-size: 1.05rem; text-align: center; color: #fff;">
+            Attention(Q, K, V) = Softmax( (Q K<sup>T</sup>) / &radic;d<sub>k</sub> ) V
+          </div>
+          <pre style="margin-top: 6px; font-size: 0.8rem;"><span class="keyword">let</span> scores = (q.<span class="fn">matmul</span>(&amp;k.<span class="fn">t</span>())? * (1.0 / sqrt_d))?;
+<span class="keyword">let</span> weights = candle_nn::ops::<span class="fn">softmax</span>(&amp;scores, 1)?;
+<span class="keyword">let</span> context = weights.<span class="fn">matmul</span>(&amp;v)?;</pre>
+        </div>
+      </div>
+      <div class="card" style="margin-top: 14px; border-left: 4px solid var(--g-green);">
+        <strong style="color: var(--g-green);">Domain Axiom:</strong>
+        <span style="font-size: 0.95rem; margin-left: 6px;">
+          Mathematical equations and typed code are <em>compressed thought</em>. Natural language is fundamentally too low-density for precision engineering.
+        </span>
+      </div>
+    </div>
+
+    <!-- Slide 5: What is Candle? -->
+    <div class="slide">
+      <h2>What is Candle? (The Anti-PyTorch)</h2>
+      <p style="margin-bottom: 16px;"><strong>Candle</strong> is Hugging Face's minimalist, pure-Rust machine learning framework.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>PyTorch</th>
+            <th>Candle (Rust)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Binary Size</strong></td>
+            <td>~5 - 15 GB</td>
+            <td class="highlight-green">~35 MB (Single Binary)</td>
+          </tr>
+          <tr>
+            <td><strong>Cold Start Time</strong></td>
+            <td>3 - 8 seconds</td>
+            <td class="highlight-green">&lt; 50 ms</td>
+          </tr>
+          <tr>
+            <td><strong>Python Dependency</strong></td>
+            <td>Mandatory</td>
+            <td class="highlight-green">Zero (100% Rust)</td>
+          </tr>
+          <tr>
+            <td><strong>Tail Latency (p99)</strong></td>
+            <td>Non-Deterministic (GC Pauses)</td>
+            <td class="highlight-green">Deterministic (&lt; 15ms)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Slide 6: Safetensors & Memory Mapping -->
+    <div class="slide">
+      <h2>Safetensors & Zero-Copy <code>mmap</code></h2>
+      <div class="grid-2">
+        <div>
+          <h3>Why Safetensors Replaced Pickle</h3>
+          <ul>
+            <li><strong>Security:</strong> PyTorch <code>.pt</code>/<code>.bin</code> files use Python <code>pickle</code>, allowing arbitrary remote code execution (RCE).</li>
+            <li><strong>Header Indexing:</strong> Safetensors stores a clean JSON metadata header + contiguous byte buffers.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Zero-Copy Memory-Mapping (<code>mmap</code>)</h3>
+          <pre><span class="keyword">let</span> vb = <span class="keyword">unsafe</span> {
+    VarBuilder::<span class="fn">from_mmaped_safetensors</span>(
+        &amp;safetensor_files,
+        dtype,
+        &amp;device
+    )?
+};</pre>
+          <p style="font-size: 0.95rem; color: var(--text-dim);">
+            Instead of allocating 5GB of RAM to parse tensors, the OS kernel maps the file directly to virtual memory pages. GPU loads weights on-demand!
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 7: Gemma 4 Architecture -->
+    <div class="slide">
+      <h2>Gemma 4 Decoder Layer Anatomy</h2>
+      <pre style="font-size: 0.85rem;">
+Input (x)
+  ├──► [input_layernorm] ──► [Self-Attn + KV Sharing] ──► [post_attn_norm] ──(+) Residual
+  │
+  ├──► [pre_ffw_layernorm] ──► [GeGLU MLP (Double-Wide)] ──► [post_ffw_norm] ──(+) Residual
+  │
+  ├──► [per_layer_gate(x)] ⊙ [PLE_layer] ──► [per_layer_proj] ──► [post_ple_norm] ──(+) Residual
+  │
+  └──► [layer_scalar] ──► Output (Next Layer)
+      </pre>
+      <div class="grid-2" style="margin-top: 12px;">
+        <div class="card">
+          <strong style="color: var(--g-blue);">Attention Scaling = 1.0</strong><br>
+          Because Q & K are normalized by RMSNorm, the scaling factor is <code>1.0</code> rather than <code>1/sqrt(d)</code>!
+        </div>
+        <div class="card">
+          <strong style="color: var(--g-green);">Double-Wide MLPs</strong><br>
+          Layers 0..14 use <code>intermediate_size = 6144</code>. Layers 15..34 expand to <code>12288</code>.
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 8: Per-Layer Embeddings Deep Dive -->
+    <div class="slide">
+      <h2>Per-Layer Embeddings (PLE)</h2>
+      <p>Standard models only feed token embeddings to Layer 0. Gemma 4 re-injects token identity at <strong>every layer</strong>.</p>
+      <pre><span class="comment">// In src/gemma4.rs:</span>
+<span class="keyword">if let</span> Some(<span class="keyword">ref</span> ple) = self.per_layer_projection {
+    <span class="keyword">let</span> ple_features = ple.<span class="fn">forward</span>(initial_embeddings)?;
+    hidden_states = (hidden_states + ple_features)?;
+}</pre>
+      <div class="card" style="border-left: 4px solid var(--g-blue); margin-top: 16px;">
+        <strong>Architectural Advantage:</strong> Injects raw lexical conditioning directly into deep layers, providing a direct gradient highway and eliminating semantic drift in long sequences.
+      </div>
+    </div>
+
+    <!-- Slide 9: Upper-Layer KV-Sharing -->
+    <div class="slide">
+      <h2>Upper-Layer KV-Sharing</h2>
+      <p style="margin-bottom: 16px;">In standard LLMs, KV Cache VRAM scales linearly with layer depth:</p>
+      <div class="quote-box" style="margin-bottom: 20px;">
+        $$\text{KV Memory} = \text{Layers} \times 2 \times \text{Heads} \times \text{HeadDim} \times \text{SeqLen}$$
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h3 style="color: var(--g-yellow);">Layers 0 .. 14</h3>
+          <p>Compute & store dedicated Key/Value representations for sliding and global attention.</p>
+        </div>
+        <div class="card" style="border: 1px solid var(--g-green);">
+          <h3 style="color: var(--g-green);">Layers 15 .. 34 (Top 20 Layers)</h3>
+          <p><strong>Do NOT compute K or V projections!</strong> They reuse the KV cache from Layers 13 & 14, cutting KV bandwidth by <strong style="color: var(--g-green);">~57%</strong>.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 10: gRPC Streaming Engine -->
+    <div class="slide">
+      <h2>High-Throughput gRPC Streaming Engine</h2>
+      <p>Decoupling ML compute from network I/O via Tonic and Tokio channels:</p>
+      <pre><span class="comment">// proto/inference.proto:</span>
+<span class="keyword">service</span> InferenceService {
+  <span class="keyword">rpc</span> StreamGenerate (GenerateRequest) <span class="keyword">returns</span> (<span class="keyword">stream</span> GenerateResponse);
+}</pre>
+      <ul>
+        <li><strong>Worker Thread:</strong> Dedicated thread runs the Candle autoregressive decode loop.</li>
+        <li><strong>Tokio Channel:</strong> Tokens are sent through non-blocking <code>mpsc::channel</code> into the gRPC response stream.</li>
+      </ul>
+    </div>
+
+    <!-- Slide 11: Go API Gateway -->
+    <div class="slide">
+      <h2>High-Concurrency Go API Gateway</h2>
+      <p>The Go Gateway sits on port <code>8080</code> and exposes an OpenAI-compatible <code>/v1/chat/completions</code> endpoint:</p>
+      <ul>
+        <li><strong>Zero GPU Footprint:</strong> Consumes &lt; 20MB of RAM, holding zero model weights.</li>
+        <li><strong>Goroutine Multiplexing:</strong> Efficiently maintains 10,000+ open HTTP SSE client streams.</li>
+        <li><strong>Independent Resiliency:</strong> The gateway can be restarted without dropping model weights from GPU VRAM.</li>
+      </ul>
+      <pre><span class="comment">// Go SSE Handler:</span>
+w.Header().Set(<span class="string">"Content-Type"</span>, <span class="string">"text/event-stream"</span>)
+flusher.Flush()</pre>
+    </div>
+
+    <!-- Slide 12: Multimodal Vision & Video -->
+    <div class="slide">
+      <h2>Multimodal Vision & Video Engine</h2>
+      <ul>
+        <li><strong>16-Layer Vision Transformer:</strong> Processes $256 \times 256$ frames into 256 visual tokens ($16 \times 16$ patches).</li>
+        <li><strong>2D Positional Embedding Table:</strong> Slices separate row and column embeddings from <code>[2, 10240, 768]</code>.</li>
+        <li><strong>Multimodal Projector:</strong> Linear projection mapping $768 \to 1536$ text hidden dimension.</li>
+        <li><strong>Temporal Video Batching:</strong> Automatically samples 8 frames via FFmpeg and flattens into a continuous token sequence <code>(1, 2048, 1536)</code>.</li>
+      </ul>
+    </div>
+
+    <!-- Slide 13: Benchmarks -->
+    <div class="slide">
+      <h2>Hardware Benchmarks</h2>
+      <p style="margin-bottom: 16px;">Comparing consumer Apple Silicon Unified RAM against Datacenter HBM3:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Platform</th>
+            <th>Accelerator</th>
+            <th>Precision</th>
+            <th>Throughput</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>MacBook Pro M3 Max</strong></td>
+            <td>Metal (16-Core GPU)</td>
+            <td>FP16</td>
+            <td class="highlight-green">45.2 tok/sec</td>
+          </tr>
+          <tr>
+            <td><strong>Google Cloud (L4)</strong></td>
+            <td>NVIDIA L4 (24GB)</td>
+            <td>FP16</td>
+            <td class="highlight-green">68.4 tok/sec</td>
+          </tr>
+          <tr>
+            <td><strong>Nebius Cloud (H100)</strong></td>
+            <td>NVIDIA H100 SXM5 (80GB)</td>
+            <td>FP16</td>
+            <td class="highlight-green">142.8 tok/sec</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Slide 14: Conclusion & Takeaways -->
+    <div class="slide">
+      <h2>Key Takeaways for Systems Engineers</h2>
+      <div class="card" style="margin-bottom: 16px; border-left: 4px solid var(--g-blue);">
+        <h3 style="color: var(--g-blue); margin-top: 0;">1. AI Code Gen Requires Systems Verification</h3>
+        <p>AI assistants generate plausible code, not necessarily correct code. Deep knowledge of tensors, memory, and scaling is the real superpower.</p>
+      </div>
+      <div class="card" style="margin-bottom: 16px; border-left: 4px solid var(--g-yellow);">
+        <h3 style="color: var(--g-yellow); margin-top: 0;">2. Rust + Candle is Production-Ready</h3>
+        <p>A single 35MB standalone binary with zero Python dependencies brings state-of-the-art foundation models to laptops, servers, and edge devices.</p>
+      </div>
+      <div class="card" style="border-left: 4px solid var(--g-green);">
+        <h3 style="color: var(--g-green); margin-top: 0;">3. Foundation Architectures are Heterogeneous</h3>
+        <p>Innovations like Per-Layer Embeddings and Upper-Layer KV-Sharing demonstrate that future AI models will require specialized systems control.</p>
+      </div>
+    </div>
+
+    <!-- Slide 15: Q&A -->
+    <div class="slide" style="justify-content: center; align-items: center; text-align: center;">
+      <h1 style="font-size: 3.5rem; color: var(--g-blue);">Thank You!</h1>
+      <h2 style="color: var(--text-bright); font-size: 2.0rem; margin-top: 12px;">Questions & Discussion</h2>
+      <div style="margin-top: 32px; font-size: 1.15rem; color: var(--text-dim);">
+        <p><strong>Repository:</strong> Oxidizing Gemma (Rust + Go + Candle)</p>
+        <p><strong>Model:</strong> Google Gemma 4 E2B</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Navigation Controls -->
+  <div id="controls">
+    <button id="prevBtn" title="Previous Slide (Left Arrow / Backspace)">&#9664;</button>
+    <span id="slide-indicator">1 / 15</span>
+    <button id="nextBtn" title="Next Slide (Right Arrow / Space)">&#9654;</button>
+    <button id="fsBtn" title="Toggle Fullscreen (F)">&#x26F6;</button>
+  </div>
+
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+  </div>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const fsBtn = document.getElementById('fsBtn');
+    const indicator = document.getElementById('slide-indicator');
+    const progressBar = document.getElementById('progress-bar');
+    let currentSlide = 0;
+
+    function updateDeck() {
+      slides.forEach((slide, idx) => {
+        slide.classList.toggle('active', idx === currentSlide);
+      });
+      indicator.textContent = `${currentSlide + 1} / ${slides.length}`;
+      const progressPercent = ((currentSlide + 1) / slides.length) * 100;
+      progressBar.style.width = `${progressPercent}%`;
+    }
+
+    function nextSlide() {
+      if (currentSlide < slides.length - 1) {
+        currentSlide++;
+        updateDeck();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateDeck();
+      }
+    }
+
+    nextBtn.addEventListener('click', nextSlide);
+    prevBtn.addEventListener('click', prevSlide);
+
+    fsBtn.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'Backspace' || e.key === 'PageUp') {
+        prevSlide();
+      } else if (e.key === 'Home') {
+        currentSlide = 0;
+        updateDeck();
+      } else if (e.key === 'End') {
+        currentSlide = slides.length - 1;
+        updateDeck();
+      } else if (e.key === 'f' || e.key === 'F') {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+        } else {
+          document.exitFullscreen();
+        }
+      }
+    });
+
+    // Touch navigation for mobile/tablets
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => {
+      touchStartX = e.changedTouches[0].screenX;
+    });
+    document.addEventListener('touchend', e => {
+      let touchEndX = e.changedTouches[0].screenX;
+      if (touchEndX < touchStartX - 50) nextSlide();
+      if (touchEndX > touchStartX + 50) prevSlide();
+    });
+
+    updateDeck();
+  </script>
+</body>
+</html>

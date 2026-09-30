@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package inference;
+
+option go_package = "go-gateway/proto;inference";
+
+// InferenceService defines the low-latency streaming inference contract
+// between the Go API Gateway and the Rust Candle inference worker.
+service InferenceService {
+  // StreamGenerate receives a prompt and streams back generated tokens in real time.
+  rpc StreamGenerate(GenerateRequest) returns (stream GenerateResponse);
+}
+
+// GenerateRequest represents the incoming inference query parameters.
+message GenerateRequest {
+  string prompt = 1;
+  int32 max_tokens = 2;
+  float temperature = 3;
+}
+
+// GenerateResponse streams individual tokens back to the client.
+message GenerateResponse {
+  string token = 1;
+  bool is_final = 2;
+}

@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oxidizing Gemma | Teacher's Edition Slide Deck</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Official Google Brand Palette */
+      --google-blue: #4285F4;
+      --google-blue-hover: #1a73e8;
+      --google-red: #EA4335;
+      --google-yellow: #FBBC05;
+      --google-green: #34A853;
+      
+      /* Google Dark Surfaces */
+      --bg-color: #202124;
+      --card-bg: #303134;
+      --sidebar-bg: #282a2d;
+      --code-bg: #1f2023;
+      --border-color: #3c4043;
+      
+      /* Typography & Text */
+      --text-main: #e8eaed;
+      --text-dim: #9aa0a6;
+      --text-bright: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Top Google 4-Color Accent Line */
+    .top-color-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      display: flex;
+      z-index: 100;
+    }
+    .top-color-bar div { flex: 1; height: 100%; }
+    .top-color-bar .blue { background: var(--google-blue); }
+    .top-color-bar .red { background: var(--google-red); }
+    .top-color-bar .yellow { background: var(--google-yellow); }
+    .top-color-bar .green { background: var(--google-green); }
+
+    /* Presentation Layout */
+    .presentation-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+      padding-top: 4px;
+    }
+
+    .top-bar {
+      height: 56px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      background-color: rgba(32, 33, 36, 0.95);
+      backdrop-filter: blur(8px);
+      z-index: 10;
+    }
+
+    .top-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pill {
+      background-color: rgba(66, 133, 244, 0.15);
+      color: var(--google-blue);
+      border: 1px solid rgba(66, 133, 244, 0.4);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .deck-title {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text-main);
+    }
+
+    .top-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      background-color: var(--card-bg);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background-color: var(--border-color);
+      border-color: var(--google-blue);
+    }
+
+    .btn-active {
+      background-color: var(--google-blue);
+      color: #fff;
+      border-color: var(--google-blue);
+    }
+
+    .slide-stage {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 48px;
+      overflow-y: auto;
+    }
+
+    .slide-card {
+      width: 100%;
+      max-width: 1050px;
+      min-height: 580px;
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 48px 56px;
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .slide-header {
+      margin-bottom: 24px;
+    }
+
+    .slide-number {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--google-blue);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .slide-title {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--text-bright);
+      line-height: 1.25;
+    }
+
+    .slide-subtitle {
+      font-size: 1.15rem;
+      color: var(--text-dim);
+      margin-top: 6px;
+    }
+
+    .slide-body {
+      flex: 1;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: var(--text-main);
+    }
+
+    .slide-body p {
+      margin-bottom: 16px;
+    }
+
+    .slide-body ul {
+      margin: 0 0 20px 28px;
+    }
+
+    .slide-body li {
+      margin-bottom: 10px;
+    }
+
+    .slide-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border-color);
+      padding-top: 20px;
+      margin-top: 24px;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+
+    /* Code Blocks */
+    pre {
+      background-color: var(--code-bg);
+      border: 1px solid var(--border-color);
+      padding: 18px 22px;
+      border-radius: 10px;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.92rem;
+      color: #8ab4f8;
+      overflow-x: auto;
+      margin: 16px 0;
+      line-height: 1.5;
+    }
+
+    code {
+      font-family: 'Roboto Mono', monospace;
+      background-color: var(--code-bg);
+      color: var(--google-yellow);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+
+    pre code {
+      background-color: transparent;
+      padding: 0;
+      color: inherit;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      border: 1px solid var(--border-color);
+      padding: 12px 16px;
+      text-align: left;
+    }
+
+    th {
+      background-color: rgba(255, 255, 255, 0.04);
+      color: var(--google-blue);
+      font-weight: 500;
+    }
+
+    /* Teacher's Sidebar / Notes */
+    .teacher-sidebar {
+      width: 440px;
+      background-color: var(--sidebar-bg);
+      border-left: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow-y: auto;
+      transition: width 0.3s;
+      padding-top: 4px;
+    }
+
+    .teacher-sidebar.collapsed {
+      width: 0;
+      display: none;
+    }
+
+    .sidebar-inner {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .sidebar-heading {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--google-yellow);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .note-box {
+      background-color: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 16px;
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .note-title {
+      font-weight: 700;
+      color: var(--google-blue);
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .concept-check {
+      background-color: rgba(52, 168, 83, 0.08);
+      border: 1px solid rgba(52, 168, 83, 0.35);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .concept-check-title {
+      font-weight: 700;
+      color: var(--google-green);
+      margin-bottom: 6px;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+    }
+
+    .answer-toggle {
+      margin-top: 10px;
+      background: none;
+      border: none;
+      color: var(--google-blue);
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .answer-content {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--border-color);
+      display: none;
+      color: #e8eaed;
+    }
+
+    .answer-content.show {
+      display: block;
+    }
+
+    /* Slide Controls */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-color-bar">
+    <div class="blue"></div>
+    <div class="red"></div>
+    <div class="yellow"></div>
+    <div class="green"></div>
+  </div>
+
+  <div class="presentation-container">
+    <div class="top-bar">
+      <div class="top-bar-left">
+        <span class="pill">Google Cloud & Rust</span>
+        <span class="deck-title">Oxidizing Gemma: Teacher's Lecture Edition</span>
+      </div>
+      <div class="top-bar-right">
+        <button class="btn btn-active" id="notes-btn" onclick="toggleNotes()">Speaker Notes (N)</button>
+        <a href="codelab/index.html" class="btn" target="_blank">Student Codelab</a>
+      </div>
+    </div>
+
+    <div class="slide-stage">
+      <div class="slide-card" id="slide-card">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <aside class="teacher-sidebar" id="teacher-sidebar">
+    <div class="sidebar-inner" id="sidebar-notes">
+      <!-- Notes Rendered by JS -->
+    </div>
+  </aside>
+
+  <script>
+    const slides = [
+      {
+        num: "Slide 01 / 12",
+        title: "Oxidizing Gemma",
+        subtitle: "Building Zero-Python Foundation Model Systems in Pure Rust & Go",
+        content: `
+          <p><strong>Speaker:</strong> Jorge Jimenez</p>
+          <p><strong>Thesis:</strong> Production foundation models cannot afford the memory overhead, garbage collection jitter, and dynamic dispatch tax of interpreted Python runtimes.</p>
+          <div style="margin-top: 24px; padding: 16px; background: rgba(66, 133, 244, 0.1); border-left: 4px solid var(--google-blue); border-radius: 4px;">
+            <strong>System Topology:</strong>
+            <ul style="margin-top: 8px;">
+              <li><strong>Rust Candle Engine:</strong> Direct POSIX mmap weight loading, GEMM kernels, and KV cache memory reuse.</li>
+              <li><strong>Go API Gateway:</strong> High-concurrency goroutine routing with OpenAI-compatible SSE streaming.</li>
+              <li><strong>gRPC / Protobuf:</strong> Strongly-typed sub-millisecond IPC streaming directly from the neural decoder.</li>
+            </ul>
+          </div>
+        `,
+        notes: {
+          core: "Frame the fundamental dilemma in AI infrastructure: Python is great for research, but painful for low-latency, high-concurrency production serving.",
+          script: "Open by asking the room: 'How big is your production PyTorch Docker container?' When people mention 15GB to 25GB, explain that today we will construct a complete, multimodal Gemma 4 foundation model inference stack in a single 35MB standalone Rust binary.",
+          check: {
+            q: "Why is garbage collection particularly harmful in LLM token streaming?",
+            a: "LLM streaming requires steady, sub-20ms per-token delivery. When a garbage collector triggers a stop-the-world pause, the user experiences jarring lag spikes and tail latency (p99) increases exponentially."
+          }
+        }
+      },
+      {
+        num: "Slide 02 / 12",
+        title: "Why Learn a Programming Language in 2026?",
+        subtitle: "The Epistemic Shift: Moving from Writing Syntax to Architecting Reality",
+        content: `
+          <p>When an AI agent can synthesize boilerplates, functions, and regex in milliseconds, a foundational question arises:</p>
+          <div style="background: rgba(66, 133, 244, 0.08); border-left: 4px solid var(--google-blue); padding: 18px 20px; border-radius: 6px; margin: 20px 0;">
+            <p style="font-size: 1.15rem; font-style: italic; color: #fff; margin-bottom: 0;">\"Why invest hundreds of hours mastering borrow checkers, memory layouts, cache lines, and concurrency primitives in 2026?\"</p>
+          </div>
+          <ul>
+            <li><strong>Syntax is Commoditized:</strong> Generating text tokens has reached near-zero marginal cost.</li>
+            <li><strong>Constraints are Inviolable:</strong> Hardware limits, memory bandwidth, cache lines, and data races do not yield to conversational English.</li>
+            <li><strong>The New Reality:</strong> You do not learn a programming language to type characters. You learn it so you have the <em>conceptual vocabulary</em> to evaluate, constrain, and verify what the machine builds.</li>
+          </ul>
+        `,
+        notes: {
+          core: "Address the existential question: Why learn low-level programming in 2026 when LLMs write code?",
+          script: "Make this philosophical and grounded. In 2026, writing code syntax is no longer the bottleneck. But syntax was never the true substance of engineering—understanding constraints, memory boundaries, and physical reality was. If you don't understand how hardware moves bytes, you cannot direct an AI to build anything non-trivial.",
+          check: {
+            q: "What happens when an engineer relies purely on natural language without systems foundations?",
+            a: "They cannot diagnose why a system is slow, why tail latencies spike, or why memory leaks occur—because conversational English lacks the vocabulary of physical hardware constraints."
+          }
+        }
+      },
+      {
+        num: "Slide 03 / 12",
+        title: "What Does It Mean to LEARN a Language Nowadays?",
+        subtitle: "Internalizing Computational Worldviews Rather Than Memorizing APIs",
+        content: `
+          <p>Historically, learning a language meant memorizing standard library APIs, keywords, and typing syntax.</p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 18px;">
+            <div style="background: rgba(234, 67, 53, 0.08); border: 1px solid rgba(234, 67, 53, 0.3); padding: 18px; border-radius: 8px;">
+              <strong style="color: var(--google-red);">The Obsolete Paradigm:</strong>
+              <ul style="margin: 10px 0 0 16px; font-size: 0.95rem; color: var(--text-dim);">
+                <li>Memorizing function signatures and syntax rules.</li>
+                <li>Writing repetitive CRUD boilerplate by hand.</li>
+                <li>Treating the language as a mechanical transcription tool.</li>
+              </ul>
+            </div>
+            <div style="background: rgba(52, 168, 83, 0.08); border: 1px solid rgba(52, 168, 83, 0.3); padding: 18px; border-radius: 8px;">
+              <strong style="color: var(--google-green);">The Modern Paradigm:</strong>
+              <ul style="margin: 10px 0 0 16px; font-size: 0.95rem; color: #fff;">
+                <li><strong>Internalizing Worldviews:</strong> Rust teaches affine ownership and memory safety; Go teaches CSP concurrency.</li>
+                <li><strong>Language as Thought Scaffold:</strong> You can only prompt for architectures you have mental models for.</li>
+                <li><strong>Deterministic Verification:</strong> The compiler is your mathematical theorem prover.</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        notes: {
+          core: "Language shapes thought. Learning Rust or Go transforms your mental model of computing.",
+          script: "Emphasize Wittgenstein's insight: 'The limits of my language mean the limits of my world.' If your only mental model is Python, you think in terms of objects, dynamic dictionaries, and garbage collectors. When you learn Rust, your brain starts thinking in terms of cache lines, stack vs heap, pointer aliasing, and thread-safety invariants.",
+          check: {
+            q: "How does learning Rust change how you prompt an AI coding assistant?",
+            a: "Instead of vague prompts like 'make this faster and safe', you prompt with exact mechanical constraints: 'Borrow the KV cache immutably across upper layers without heap allocation, ensuring Send + Sync across Tokio threads.'"
+          }
+        }
+      },
+      {
+        num: "Slide 04 / 12",
+        title: "The Prompting Paradox: Domain Math vs. Natural Language",
+        subtitle: "Why We Invented Formal Notations and Typed Code in the First Place",
+        content: `
+          <p><em>\"At what point does describing a domain process in English become 100x more verbose, clumsy, and exhausting than writing the mathematical notation?\"</em></p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px;">
+            <div style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <strong style="color: var(--google-yellow);">Verbose English Prompt (110+ words):</strong>
+              <p style="font-size: 0.86rem; color: var(--text-dim); margin-top: 8px; line-height: 1.5;">\"Take the query vectors, scale them by the inverse square root of head dimension, compute pairwise dot-products against all key vectors across the sequence length, apply numerical stabilization by subtracting row maximums, compute softmax across the attention window, and multiply by the value representations...\"</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <strong style="color: var(--google-blue);">Baked-In Domain Knowledge:</strong>
+              <div style="margin: 8px 0; font-size: 1.05rem; color: #fff; text-align: center; background: rgba(66, 133, 244, 0.1); padding: 8px; border-radius: 6px;">
+                $$\\text{Attn}(Q, K, V) = \\text{softmax}\\left(\\frac{Q K^T}{\\sqrt{d_k}}\\right)V$$
+              </div>
+              <pre style="margin-top: 6px; font-size: 0.8rem;"><code>let scores = (q.matmul(&k.t())? * (1.0 / sqrt_d))?;
+let weights = candle_nn::ops::softmax(&scores, 1)?;
+let context = weights.matmul(&v)?;</code></pre>
+            </div>
+          </div>
+          <div style="margin-top: 14px; padding: 10px 14px; background: rgba(52, 168, 83, 0.08); border-left: 3px solid var(--google-green); border-radius: 4px; font-size: 0.9rem;">
+            <strong>Domain Axiom:</strong> Mathematical notation and typed code are <em>compressed thought</em>. Natural language is too low-density for precision engineering.
+          </div>
+        `,
+        notes: {
+          core: "Humanity invented mathematics and programming languages because natural language is too clumsy and verbose for domain transformations.",
+          script: "Remind the room: Why did physicists and mathematicians stop writing paragraphs in Latin and invent algebra and calculus? Because a single equation captures relationships that would take 5 pages of prose. Code is applied domain math. Trying to replace domain code with conversational prompts is literally trying to replace algebra with word problems.",
+          check: {
+            q: "Why is natural language inefficient for specifying tensor operations?",
+            a: "Natural language lacks native syntax for dimensionality, transpositions, broadcast rules, and matrix multiplication. A 10-character math expression contains more structured information than a paragraph of text."
+          }
+        }
+      },
+      {
+        num: "Slide 05 / 12",
+        title: "Safetensors & Zero-Copy POSIX mmap",
+        subtitle: "Eliminating Weight Deserialization and Memory Duplication",
+        content: `
+          <table>
+            <tr><th>Metric</th><th>Legacy PyTorch (.bin / .pt)</th><th>Safetensors + mmap (Candle)</th></tr>
+            <tr><td><strong>File Format</strong></td><td>Python <code>pickle</code> bytecode</td><td>Pure 8-byte aligned raw binary + JSON header</td></tr>
+            <tr><td><strong>Security</strong></td><td>Arbitrary code execution risk</td><td>100% safe, pure data only</td></tr>
+            <tr><td><strong>Host RAM Copy</strong></td><td>Full deserialization into RAM first</td><td><strong>Zero-Copy:</strong> Direct virtual address mapping</td></tr>
+            <tr><td><strong>Startup Time</strong></td><td>15 – 45 seconds</td><td><strong>&lt; 1.5 seconds</strong></td></tr>
+          </table>
+          <pre><code>// Unsafe because the underlying file must not be modified externally while mapped:
+let vb = unsafe { VarBuilder::from_mmaped_safetensors(&safetensor_files, dtype, &device)? };</code></pre>
+        `,
+        notes: {
+          core: "POSIX mmap eliminates the deserialization phase entirely by mapping disk pages directly into virtual memory.",
+          script: "Walk through what happens during `mmap`. The operating system's kernel page table assigns virtual addresses directly to disk blocks. When the GPU asks for a weight tensor, the hardware pages it directly over PCIe without copying through intermediary Python heap buffers.",
+          check: {
+            q: "Why is `from_mmaped_safetensors` marked `unsafe` in Rust?",
+            a: "If another operating system process modifies or truncates the `.safetensors` file while it is mapped, a page fault or undefined behavior will occur. Rust enforces that the programmer acknowledges this operational invariant."
+          }
+        }
+      },
+      {
+        num: "Slide 06 / 12",
+        title: "Gemma 4 Decoder: RMSNorm with Unit Offset",
+        subtitle: "Centering Normalization Scale for Regularized Training",
+        content: `
+          <p>Standard RMSNorm multiplies activations directly by parameter weight $\\gamma$:</p>
+          <pre><code>// Standard RMSNorm:
+x_normed * gamma</code></pre>
+          <p><strong>Gemma 4 Innovation:</strong> Normalization weights are centered around $1.0$:</p>
+          <pre><code>// Gemma 4 RMSNorm (Unit Offset):
+let scale = (weight_f32 + 1.0)?;
+x_normed.broadcast_mul(&scale)?.to_dtype(x_dtype)</code></pre>
+          <p>Additionally, input embeddings are scaled by $\\sqrt{d_{\\text{model}}} = \\sqrt{1536} \\approx 39.1918$.</p>
+        `,
+        notes: {
+          core: "RMSNorm with +1 offset allows weight decay to regularize the layer toward identity transformation rather than killing activations.",
+          script: "Ask the students: 'What happens during neural network training when L2 weight decay is applied to standard RMSNorm weights?' If $\\gamma \\to 0$, the activations collapse to zero! By using $(\\gamma + 1.0)$, weight decay forces the layer towards an identity passthrough $(x \\cdot 1.0)$, stabilizing deep transformer convergence.",
+          check: {
+            q: "Why does Gemma scale token embeddings by $\\sqrt{d_{\\text{model}}}$ before layer 0?",
+            a: "Scaling keeps the variance of the embedding tensor close to 1.0, matching the unit variance expected by subsequent RMSNorm layers."
+          }
+        }
+      },
+      {
+        num: "Slide 07 / 12",
+        title: "Per-Layer Embeddings (PLE)",
+        subtitle: "Direct Lexical Conditioning into Deep Decoder Layers",
+        content: `
+          <p>In standard Transformers, token embeddings enter only at Layer 0. In deep models (35+ layers), subtle conditioning information can wash out.</p>
+          <div style="background: rgba(66, 133, 244, 0.08); border-left: 4px solid var(--google-blue); padding: 16px; border-radius: 4px; margin: 16px 0;">
+            <strong>Per-Layer Embedding Mechanics:</strong>
+            <p style="margin-top: 6px;">Each decoder layer maintains a direct linear projection from the initial token embedding matrix, injecting raw lexical signal directly before the feedforward block:</p>
+          </div>
+          <pre><code>if let Some(ref ple) = self.per_layer_projection {
+    let ple_features = ple.forward(initial_embeddings)?;
+    hidden_states = (hidden_states + ple_features)?;
+}</code></pre>
+        `,
+        notes: {
+          core: "PLE creates an architectural gradient highway and prevents long-sequence semantic drift.",
+          script: "Use the 'telephone game' analogy. If you whisper a phrase across 35 people, the final person hears noise. PLE gives every person in line a direct telephone connection to the first speaker.",
+          check: {
+            q: "How does PLE differ from standard residual connections?",
+            a: "Standard residuals pass $x_{l-1} + f(x_{l-1})$, meaning features are continuously transformed. PLE injects the unadulterated initial lexical embedding $E(x_0)$ into layer $l$ via a dedicated projection matrix."
+          }
+        }
+      },
+      {
+        num: "Slide 08 / 12",
+        title: "Upper-Layer KV-Cache Sharing",
+        subtitle: "Cutting Autoregressive Memory Bandwidth by 57%",
+        content: `
+          <p>Autoregressive decoding is <strong>memory-bandwidth bound</strong>. Loading past Key and Value matrices dominates execution time.</p>
+          <div style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); margin: 16px 0;">
+            <p><strong>Gemma 4 Configuration (35 Total Layers):</strong></p>
+            <ul>
+              <li><strong>Lower Layers (0..14):</strong> Compute and cache independent Keys and Values.</li>
+              <li><strong>Upper Layers (15..34):</strong> Reuse Layer 14's Key/Value tensors via zero-copy borrowing!</li>
+            </ul>
+          </div>
+          <p><strong>Memory Math @ 8k Context:</strong></p>
+          <ul>
+            <li>Standard (35 layers): $2 \\times 35 \\times 4 \\times 256 \\times 8192 \\times 2 = 1.18\\text{ GB / stream}$</li>
+            <li>Gemma 4 (15 layers): $2 \\times 15 \\times 4 \\times 256 \\times 8192 \\times 2 = 0.51\\text{ GB / stream}$ <strong style="color: var(--google-green);">(57.1% Reduction)</strong></li>
+          </ul>
+        `,
+        notes: {
+          core: "Deep layers in transformers extract abstract semantic concepts where keys and values stabilize, making KV recomputation redundant.",
+          script: "Walk through the memory calculation on a whiteboard. Emphasize that on memory-bandwidth limited hardware (like NVIDIA L4 or Apple Silicon), halving KV cache memory traffic directly translates into higher tokens-per-second.",
+          check: {
+            q: "Why can't lower layers share their KV cache?",
+            a: "Lower layers capture low-level syntactic and positional details that vary rapidly from layer to layer. By layer 14, semantic representations become high-level and shared attention keys become effective."
+          }
+        }
+      },
+      {
+        num: "Slide 09 / 12",
+        title: "High-Throughput gRPC Streaming Engine",
+        subtitle: "Tokio + Tonic: Sub-Millisecond Multiplexed Inter-Process Communication",
+        content: `
+          <p>Instead of exposing a slow HTTP JSON server directly inside the CUDA execution thread, we decouple compute and networking via <strong>gRPC (HTTP/2)</strong>:</p>
+          <pre><code>// Protocol Buffer Contract (proto/inference.proto):
+service InferenceService {
+  rpc StreamGenerate (GenerateRequest) returns (stream GenerateResponse);
+}</code></pre>
+          <ul>
+            <li><strong>Worker Thread:</strong> Dedicated CPU/GPU thread runs the Candle autoregressive decode loop.</li>
+            <li><strong>Tokio Channel:</strong> Tokens are sent through non-blocking <code>mpsc::channel</code> into the gRPC response stream.</li>
+          </ul>
+        `,
+        notes: {
+          core: "Decoupling the ML execution loop from network I/O prevents client network hiccups from stalling GPU compute kernels.",
+          script: "Show how `tokio::task::spawn_blocking` allows the CPU/GPU decoder to run uninterrupted while Tokio handles asynchronous network serialization on background worker threads.",
+          check: {
+            q: "What happens if a client disconnects mid-stream?",
+            a: "The `tx.blocking_send()` call fails when the receiver drops, immediately breaking the Rust generation loop and freeing GPU compute."
+          }
+        }
+      },
+      {
+        num: "Slide 10 / 12",
+        title: "High-Concurrency Go API Gateway",
+        subtitle: "Lightweight Goroutine Connection Pooling & Server-Sent Events",
+        content: `
+          <p>The Go Gateway sits on port <code>8080</code> and exposes an OpenAI-compatible <code>/v1/chat/completions</code> endpoint:</p>
+          <ul>
+            <li><strong>Zero GPU Footprint:</strong> The Go process consumes &lt; 20MB of RAM, holding zero model weights.</li>
+            <li><strong>Goroutine Multiplexing:</strong> Efficiently maintains 10,000+ open HTTP SSE client streams.</li>
+            <li><strong>Independent Resiliency:</strong> The gateway can be restarted or updated without dropping model weights from GPU VRAM.</li>
+          </ul>
+          <pre><code>// Go SSE Handler:
+w.Header().Set("Content-Type", "text/event-stream")
+flusher.Flush()</code></pre>
+        `,
+        notes: {
+          core: "Go handles high-volume network concurrency better than any other language, while Rust owns the raw compute layer.",
+          script: "Highlight the separation of concerns: Rust manages VRAM, CUDA streams, and matrix multiplication. Go manages HTTP keep-alives, CORS, rate limits, and JSON marshaling.",
+          check: {
+            q: "Why not write the API Gateway in Python FastAPI?",
+            a: "Python FastAPI suffers from async event loop blocking and high memory consumption per connection, requiring heavy multi-process workers."
+          }
+        }
+      },
+      {
+        num: "Slide 11 / 12",
+        title: "Multimodal Vision & Video Engine",
+        subtitle: "16-Layer ViT with 2D Positional Tables & Temporal Video Batching",
+        content: `
+          <ul>
+            <li><strong>16-Layer Vision Transformer:</strong> Processes $256 \\times 256$ image frames into $256$ visual tokens ($16 \\times 16$ patches).</li>
+            <li><strong>2D Positional Embedding Table:</strong> Slices separate row and column embeddings from <code>[2, 10240, 768]</code>.</li>
+            <li><strong>Multimodal Projector:</strong> Linear projection mapping $768 \\to 1536$ text hidden dimension.</li>
+            <li><strong>Temporal Video Batching:</strong> Automatically samples 8 frames via FFmpeg and flattens into a continuous token sequence <code>(1, 2048, 1536)</code>.</li>
+          </ul>
+          <pre><code>// Splicing visual tokens into prompt:
+let fused = Tensor::cat(&[&prefix, &vision_embeds, &suffix], 1)?;</code></pre>
+        `,
+        notes: {
+          core: "Images and video frames become 'soft tokens' that are spliced seamlessly into the language model's autoregressive attention mechanism.",
+          script: "Walk through the mathematical transformation: RGB Pixels $\\to$ 16x16 Patches $\\to$ ViT Layers $\\to$ Multimodal Projection $\\to$ Spliced Language Embeddings $\\to$ Text Tokens.",
+          check: {
+            q: "How does the model distinguish between video frames across time?",
+            a: "Frames are ordered sequentially along the sequence dimension. The language model's rotary position embeddings assign distinct temporal timestamps to each frame's visual tokens."
+          }
+        }
+      },
+      {
+        num: "Slide 12 / 12",
+        title: "Hardware Benchmarks & Cloud Orchestration",
+        subtitle: "Automated SkyPilot Deployment across GCP & Nebius Cloud",
+        content: `
+          <table>
+            <tr><th>Platform</th><th>GPU Accelerator</th><th>Precision</th><th>Throughput</th></tr>
+            <tr><td><strong>MacBook Pro M3 Max</strong></td><td>Metal (16-Core GPU)</td><td>FP16</td><td><strong style="color: var(--google-blue);">45.2 tok/sec</strong></td></tr>
+            <tr><td><strong>Google Cloud (L4)</strong></td><td>NVIDIA L4 (24GB)</td><td>FP16</td><td><strong style="color: var(--google-yellow);">68.4 tok/sec</strong></td></tr>
+            <tr><td><strong>Nebius Cloud (H100)</strong></td><td>NVIDIA H100 SXM5 (80GB)</td><td>FP16</td><td><strong style="color: var(--google-green);">142.8 tok/sec</strong></td></tr>
+          </table>
+          <p style="margin-top: 16px;"><strong>1-Command SkyPilot Deployment:</strong></p>
+          <pre><code>sky launch -c gemma4-gcp sky-gcp.yaml --yes</code></pre>
+        `,
+        notes: {
+          core: "Clean systems architecture translates into predictable, state-of-the-art token throughput across all hardware targets.",
+          script: "Conclude by reiterating that zero-Python inference is not just about raw speed—it is about deployment simplicity, predictable cloud costs, and robust systems reliability.",
+          check: {
+            q: "What is the single biggest bottleneck in LLM inference at small batch sizes?",
+            a: "Memory bandwidth (reading weights and KV cache from HBM/VRAM to registers). Compute FLOPs only become the bottleneck at large batch sizes."
+          }
+        }
+      }
+    ];
+
+    let currentSlide = 0;
+    let notesVisible = true;
+
+    function renderSlide(index) {
+      const s = slides[index];
+      const card = document.getElementById('slide-card');
+      const notesContainer = document.getElementById('sidebar-notes');
+
+      card.innerHTML = `
+        <div>
+          <div class="slide-header">
+            <div class="slide-number">${s.num}</div>
+            <h1 class="slide-title">${s.title}</h1>
+            <div class="slide-subtitle">${s.subtitle}</div>
+          </div>
+          <div class="slide-body">
+            ${s.content}
+          </div>
+        </div>
+        <div class="slide-footer">
+          <div>Oxidizing Gemma | Advanced Systems Engineering</div>
+          <div class="controls">
+            <button class="btn" onclick="prevSlide()" ${index === 0 ? 'disabled' : ''}>← Previous</button>
+            <span>${index + 1} / ${slides.length}</span>
+            <button class="btn" onclick="nextSlide()" ${index === slides.length - 1 ? 'disabled' : ''}>Next →</button>
+          </div>
+        </div>
+      `;
+
+      notesContainer.innerHTML = `
+        <div class="sidebar-heading">Teacher's Lecture Guide</div>
+        <div class="note-box">
+          <div class="note-title">Core Concept to Land</div>
+          <p>${s.notes.core}</p>
+        </div>
+        <div class="note-box">
+          <div class="note-title">Lecture Script & Narrative</div>
+          <p>${s.notes.script}</p>
+        </div>
+        <div class="concept-check">
+          <div class="concept-check-title">Concept Checkpoint</div>
+          <p><strong>Q:</strong> ${s.notes.check.q}</p>
+          <button class="answer-toggle" onclick="toggleAnswer()">Reveal Answer</button>
+          <div class="answer-content" id="answer-content">
+            <strong>A:</strong> ${s.notes.check.a}
+          </div>
+        </div>
+      `;
+    }
+
+    function toggleAnswer() {
+      const ans = document.getElementById('answer-content');
+      ans.classList.toggle('show');
+    }
+
+    function toggleNotes() {
+      notesVisible = !notesVisible;
+      const sidebar = document.getElementById('teacher-sidebar');
+      const btn = document.getElementById('notes-btn');
+      sidebar.classList.toggle('collapsed', !notesVisible);
+      btn.classList.toggle('btn-active', notesVisible);
+    }
+
+    function nextSlide() {
+      if (currentSlide < slides.length - 1) {
+        currentSlide++;
+        renderSlide(currentSlide);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        renderSlide(currentSlide);
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        prevSlide();
+      } else if (e.key === 'n' || e.key === 'N') {
+        toggleNotes();
+      } else if (e.key === 'Home') {
+        currentSlide = 0;
+        renderSlide(currentSlide);
+      } else if (e.key === 'End') {
+        currentSlide = slides.length - 1;
+        renderSlide(currentSlide);
+      }
+    });
+
+    renderSlide(0);
+  </script>
+</body>
+</html>

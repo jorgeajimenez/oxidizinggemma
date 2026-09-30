@@ -1,0 +1,66 @@
+# ==============================================================================
+# SkyPilot Task Configuration: Gemma 4 on Google Cloud Platform (GCP)
+# ==============================================================================
+# Launch with:
+#   sky launch -c gemma4-gcp sky-gcp.yaml --yes
+#
+# Check status:
+#   sky status
+#
+# SSH into cluster:
+#   ssh gemma4-gcp
+#
+# Teardown cluster:
+#   sky down gemma4-gcp --yes
+# ==============================================================================
+
+name: gemma4-gcp
+
+resources:
+  cloud: gcp
+  accelerators: L4:1    # Cost-effective GCP GPU (24GB VRAM) or A100:1 / T4:1
+  disk_size: 150
+  ports:
+    - 8080    # Go API Gateway SSE port
+    - 50051   # Rust gRPC Inference port
+
+workdir: .
+
+file_mounts:
+  /root/models/gemma-4-e2b: models/gemma-4-e2b
+
+setup: |
+  set -e
+  echo "=== Setting up Gemma 4 Inference Environment on GCP ==="
+  
+  # Install Go & Protoc
+  sudo apt-get update
+  sudo apt-get install -y golang-go protobuf-compiler build-essential pkg-config libssl-dev
+
+  # Install Rust toolchain
+  if ! command -v cargo &> /dev/null; then
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+  fi
+  source "$HOME/.cargo/env"
+
+  # Build Rust CUDA Worker & CLI
+  export PATH="/usr/local/cuda/bin:$PATH"
+  export CUDA_HOME="/usr/local/cuda"
+  cargo build --release --no-default-features --features cuda
+  cargo build --bin cli --release --no-default-features --features cuda
+
+  # Build Go API Gateway
+  cd go-gateway && go build -o gateway main.go
+
+run: |
+  set -e
+  source "$HOME/.cargo/env"
+  export PATH="/usr/local/cuda/bin:$PATH"
+  export CUDA_HOME="/usr/local/cuda"
+
+  echo "=== Starting Rust Gemma 4 gRPC Worker ==="
+  nohup stdbuf -oL -eL ./target/release/gemma_hello > worker.log 2>&1 &
+
+  echo "=== Starting Go API Gateway on :8080 ==="
+  cd go-gateway
+  ./gateway

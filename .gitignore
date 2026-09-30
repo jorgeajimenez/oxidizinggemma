@@ -1,0 +1,34 @@
+# Rust build artifacts
+target/
+**/*.rs.bk
+Cargo.lock.bak
+
+# Model weights and caches
+models/
+*.safetensors
+*.bin
+*.pt
+*.onnx
+
+# Go build artifacts
+go-gateway/gateway
+
+# Environment and sensitive keys
+.env
+.env.*
+!.env.example
+
+# Context exports and reference folders
+PROJECT_CONTEXT.md
+FULL_PROJECT_CONTEXT.md
+*.context.md
+reference_only/
+
+
+# OS and IDE files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+
