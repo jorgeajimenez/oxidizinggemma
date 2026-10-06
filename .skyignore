@@ -1,0 +1,33 @@
+# SkyPilot ignore file: prevents syncing bulky or local artifacts to cloud VMs
+# ==============================================================================
+
+# 1. Model weights (downloaded directly in the cloud at 10 Gbps)
+models/
+*.safetensors
+*.bin
+*.pt
+*.onnx
+
+# 2. Local build artifacts
+target/
+go-gateway/gateway
+
+# 3. Version control & local environment
+.git/
+.env
+.env.*
+!.env.example
+
+# 4. OS and IDE metadata
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# 5. Logs and context exports
+*.log
+worker.log
+PROJECT_CONTEXT.md
+FULL_PROJECT_CONTEXT.md
+*.context.md
+reference_only/

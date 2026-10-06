@@ -375,7 +375,79 @@
       </div>
     </div>
 
-    <!-- Slide 4: The Prompting Paradox -->
+    <!-- Slide 4: Core Rust Concepts -->
+    <div class="slide">
+      <h2><span class="badge badge-blue">Rust</span> Core Concepts: Safety Without Garbage Collection</h2>
+      <div class="grid-2" style="margin-top: 14px;">
+        <div class="card" style="border-left: 4px solid var(--g-blue);">
+          <strong style="color: var(--g-blue);">1. Ownership &amp; Move Semantics</strong>
+          <p style="font-size: 0.95rem; margin-top: 6px; color: var(--text-dim);">
+            Every value has a unique owner. Moving ownership prevents double-frees. When the owner drops out of scope, memory is freed deterministically (RAII).
+          </p>
+          <pre style="margin-top: 8px; font-size: 0.8rem;"><span class="keyword">let</span> s1 = String::<span class="fn">from</span>(<span class="string">"tensor"</span>);
+<span class="keyword">let</span> s2 = s1; <span class="comment">// s1 is moved, no longer accessible</span></pre>
+        </div>
+        <div class="card" style="border-left: 4px solid var(--g-green);">
+          <strong style="color: var(--g-green);">2. Borrow Checker: Aliasing XOR Mutability</strong>
+          <p style="font-size: 0.95rem; margin-top: 6px; color: var(--text-dim);">
+            You can have <em>many immutable references</em> (<code>&amp;T</code>) OR <em>one mutable reference</em> (<code>&amp;mut T</code>), never both. Eliminates data races at compile time!
+          </p>
+          <pre style="margin-top: 8px; font-size: 0.8rem;"><span class="keyword">fn</span> <span class="fn">update</span>(t: &amp;<span class="keyword">mut</span> <span class="type">Tensor</span>) { <span class="comment">/* exclusive lock */</span> }</pre>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-top: 14px;">
+        <div class="card" style="border-left: 4px solid var(--g-yellow);">
+          <strong style="color: var(--g-yellow);">3. Algebraic Types &amp; Explicit Errors</strong>
+          <p style="font-size: 0.95rem; margin-top: 6px; color: var(--text-dim);">
+            No <code>null</code> or unchecked exceptions. <code>Option&lt;T&gt;</code> and <code>Result&lt;T, E&gt;</code> require exhaustive matching and <code>?</code> error propagation.
+          </p>
+        </div>
+        <div class="card" style="border-left: 4px solid var(--g-red);">
+          <strong style="color: var(--g-red);">4. Zero-Cost Abstractions</strong>
+          <p style="font-size: 0.95rem; margin-top: 6px; color: var(--text-dim);">
+            Traits, generics, and iterators monomorphize into optimal assembly code without virtual dispatch or runtime boxing penalties.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 5: Core Go Concepts -->
+    <div class="slide">
+      <h2><span class="badge badge-green">Go</span> Core Concepts: Concurrency &amp; Pragmatic Systems</h2>
+      <div class="grid-2" style="margin-top: 14px;">
+        <div class="card" style="border-left: 4px solid var(--g-green);">
+          <strong style="color: var(--g-green);">1. Goroutines (M:N Concurrency)</strong>
+          <p style="font-size: 0.95rem; margin-top: 6px; color: var(--text-dim);">
+            Lightweight, user-space execution threads multiplexed onto OS threads. Segmented stacks start at ~2KB, allowing millions of concurrent routines.
+          </p>
+          <pre style="margin-top: 8px; font-size: 0.8rem;"><span class="keyword">go</span> <span class="fn">handleClientStream</span>(ctx, req)</pre>
+        </div>
+        <div class="card" style="border-left: 4px solid var(--g-blue);">
+          <strong style="color: var(--g-blue);">2. Channels &amp; CSP Communication</strong>
+          <p style="font-size: 0.95rem; margin-top: 6px; color: var(--text-dim);">
+            <em>"Do not communicate by sharing memory; instead, share memory by communicating."</em> Typed channels synchronize data across routines safely.
+          </p>
+          <pre style="margin-top: 8px; font-size: 0.8rem;">ch := <span class="fn">make</span>(<span class="keyword">chan</span> <span class="type">TokenChunk</span>, 64)
+ch &lt;- token <span class="comment">// send to stream flusher</span></pre>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-top: 14px;">
+        <div class="card" style="border-left: 4px solid var(--g-yellow);">
+          <strong style="color: var(--g-yellow);">3. Implicit Interfaces (Structural Typing)</strong>
+          <p style="font-size: 0.95rem; margin-top: 6px; color: var(--text-dim);">
+            Types satisfy interfaces simply by implementing matching methods (no <code>implements</code> keyword). Enables low-coupling, composable microservices.
+          </p>
+        </div>
+        <div class="card" style="border-left: 4px solid var(--g-red);">
+          <strong style="color: var(--g-red);">4. Fast Compilation &amp; Low-Latency GC</strong>
+          <p style="font-size: 0.95rem; margin-top: 6px; color: var(--text-dim);">
+            Sub-second build times and a concurrent tri-color mark-sweep garbage collector optimized for sub-millisecond network I/O pauses.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 6: The Prompting Paradox -->
     <div class="slide">
       <h2>The Prompting Paradox: Domain Math vs. Natural Language</h2>
       <div class="quote-box">
@@ -406,7 +478,7 @@
       </div>
     </div>
 
-    <!-- Slide 5: What is Candle? -->
+    <!-- Slide 7: What is Candle? -->
     <div class="slide">
       <h2>What is Candle? (The Anti-PyTorch)</h2>
       <p style="margin-bottom: 16px;"><strong>Candle</strong> is Hugging Face's minimalist, pure-Rust machine learning framework.</p>
@@ -443,7 +515,7 @@
       </table>
     </div>
 
-    <!-- Slide 6: Safetensors & Memory Mapping -->
+    <!-- Slide 8: Safetensors & Memory Mapping -->
     <div class="slide">
       <h2>Safetensors & Zero-Copy <code>mmap</code></h2>
       <div class="grid-2">
@@ -470,7 +542,7 @@
       </div>
     </div>
 
-    <!-- Slide 7: Gemma 4 Architecture -->
+    <!-- Slide 9: Gemma 4 Architecture -->
     <div class="slide">
       <h2>Gemma 4 Decoder Layer Anatomy</h2>
       <pre style="font-size: 0.85rem;">
@@ -495,7 +567,7 @@ Input (x)
       </div>
     </div>
 
-    <!-- Slide 8: Per-Layer Embeddings Deep Dive -->
+    <!-- Slide 10: Per-Layer Embeddings Deep Dive -->
     <div class="slide">
       <h2>Per-Layer Embeddings (PLE)</h2>
       <p>Standard models only feed token embeddings to Layer 0. Gemma 4 re-injects token identity at <strong>every layer</strong>.</p>
@@ -509,7 +581,7 @@ Input (x)
       </div>
     </div>
 
-    <!-- Slide 9: Upper-Layer KV-Sharing -->
+    <!-- Slide 11: Upper-Layer KV-Sharing -->
     <div class="slide">
       <h2>Upper-Layer KV-Sharing</h2>
       <p style="margin-bottom: 16px;">In standard LLMs, KV Cache VRAM scales linearly with layer depth:</p>
@@ -528,7 +600,7 @@ Input (x)
       </div>
     </div>
 
-    <!-- Slide 10: gRPC Streaming Engine -->
+    <!-- Slide 12: gRPC Streaming Engine -->
     <div class="slide">
       <h2>High-Throughput gRPC Streaming Engine</h2>
       <p>Decoupling ML compute from network I/O via Tonic and Tokio channels:</p>
@@ -542,7 +614,7 @@ Input (x)
       </ul>
     </div>
 
-    <!-- Slide 11: Go API Gateway -->
+    <!-- Slide 13: Go API Gateway -->
     <div class="slide">
       <h2>High-Concurrency Go API Gateway</h2>
       <p>The Go Gateway sits on port <code>8080</code> and exposes an OpenAI-compatible <code>/v1/chat/completions</code> endpoint:</p>
@@ -556,7 +628,7 @@ w.Header().Set(<span class="string">"Content-Type"</span>, <span class="string">
 flusher.Flush()</pre>
     </div>
 
-    <!-- Slide 12: Multimodal Vision & Video -->
+    <!-- Slide 14: Multimodal Vision & Video -->
     <div class="slide">
       <h2>Multimodal Vision & Video Engine</h2>
       <ul>
@@ -567,7 +639,7 @@ flusher.Flush()</pre>
       </ul>
     </div>
 
-    <!-- Slide 13: Benchmarks -->
+    <!-- Slide 15: Benchmarks -->
     <div class="slide">
       <h2>Hardware Benchmarks</h2>
       <p style="margin-bottom: 16px;">Comparing consumer Apple Silicon Unified RAM against Datacenter HBM3:</p>
@@ -603,7 +675,7 @@ flusher.Flush()</pre>
       </table>
     </div>
 
-    <!-- Slide 14: Conclusion & Takeaways -->
+    <!-- Slide 16: Conclusion & Takeaways -->
     <div class="slide">
       <h2>Key Takeaways for Systems Engineers</h2>
       <div class="card" style="margin-bottom: 16px; border-left: 4px solid var(--g-blue);">
@@ -620,7 +692,7 @@ flusher.Flush()</pre>
       </div>
     </div>
 
-    <!-- Slide 15: Q&A -->
+    <!-- Slide 17: Q&A -->
     <div class="slide" style="justify-content: center; align-items: center; text-align: center;">
       <h1 style="font-size: 3.5rem; color: var(--g-blue);">Thank You!</h1>
       <h2 style="color: var(--text-bright); font-size: 2.0rem; margin-top: 12px;">Questions & Discussion</h2>
@@ -635,7 +707,7 @@ flusher.Flush()</pre>
   <!-- Bottom Navigation Controls -->
   <div id="controls">
     <button id="prevBtn" title="Previous Slide (Left Arrow / Backspace)">&#9664;</button>
-    <span id="slide-indicator">1 / 15</span>
+    <span id="slide-indicator">1 / 17</span>
     <button id="nextBtn" title="Next Slide (Right Arrow / Space)">&#9654;</button>
     <button id="fsBtn" title="Toggle Fullscreen (F)">&#x26F6;</button>
   </div>

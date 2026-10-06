@@ -1,0 +1,14 @@
+# GitHub Linguist Overrides
+# Exclude HTML slides, interactive codelabs, and markdown documentation
+# from repository language statistics so GitHub reflects Rust & Go.
+
+*.html linguist-documentation=true
+*.htm linguist-documentation=true
+codelab/** linguist-documentation=true
+docs/** linguist-documentation=true
+reference_only/** linguist-vendored=true
+go-gateway/proto/** linguist-generated=true
+
+# Explicitly ensure core Rust and Go code are primary
+*.rs linguist-detectable=true
+*.go linguist-detectable=true

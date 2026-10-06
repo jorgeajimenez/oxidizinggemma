@@ -26,40 +26,52 @@ resources:
 
 workdir: .
 
-file_mounts:
-  /root/models/gemma-4-e2b: models/gemma-4-e2b
+envs:
+  HF_TOKEN: null   # Forwards HF_TOKEN from local environment to VM
 
 setup: |
   set -e
-  echo "=== Setting up Gemma 4 Inference Environment on GCP ==="
-  
-  # Install Go & Protoc
+  echo "=== 1. Installing System Toolchains & Dependencies ==="
   sudo apt-get update
-  sudo apt-get install -y golang-go protobuf-compiler build-essential pkg-config libssl-dev
+  sudo apt-get install -y golang-go protobuf-compiler build-essential pkg-config libssl-dev python3-pip python3-venv netcat-openbsd
 
-  # Install Rust toolchain
+  echo "=== 2. Setting up CUDA Compatibility Shim ==="
+  bash scripts/setup_cuda_compat.sh
+  export PATH="$HOME/compat_bin:/usr/local/cuda/bin:$PATH"
+  export CUDA_HOME="/usr/local/cuda"
+
+  echo "=== 3. Downloading Gemma 4 Model Weights from Hugging Face ==="
+  python3 -m venv "$HOME/hf_env"
+  "$HOME/hf_env/bin/pip" install -q huggingface_hub hf_transfer
+  "$HOME/hf_env/bin/python3" scripts/download_model.py --token "${HF_TOKEN}" --local-dir models/gemma-4-e2b
+
+  echo "=== 4. Setting up Rust Toolchain ==="
   if ! command -v cargo &> /dev/null; then
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
   fi
   source "$HOME/.cargo/env"
 
-  # Build Rust CUDA Worker & CLI
-  export PATH="/usr/local/cuda/bin:$PATH"
-  export CUDA_HOME="/usr/local/cuda"
+  echo "=== 5. Building Rust CUDA Worker ==="
   cargo build --release --no-default-features --features cuda
-  cargo build --bin cli --release --no-default-features --features cuda
 
-  # Build Go API Gateway
+  echo "=== 6. Building Go API Gateway ==="
   cd go-gateway && go build -o gateway main.go
+  echo "=== Setup & Build Finished Successfully ==="
 
 run: |
   set -e
   source "$HOME/.cargo/env"
-  export PATH="/usr/local/cuda/bin:$PATH"
+  export PATH="$HOME/compat_bin:/usr/local/cuda/bin:$PATH"
   export CUDA_HOME="/usr/local/cuda"
 
   echo "=== Starting Rust Gemma 4 gRPC Worker ==="
   nohup stdbuf -oL -eL ./target/release/gemma_hello > worker.log 2>&1 &
+
+  echo "=== Waiting for gRPC inference worker to warm up on :50051 ==="
+  while ! nc -z 127.0.0.1 50051; do
+    sleep 0.5
+  done
+  echo "✓ gRPC inference worker is ready and warm."
 
   echo "=== Starting Go API Gateway on :8080 ==="
   cd go-gateway
